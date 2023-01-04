@@ -472,17 +472,20 @@ void minimisationTotal(Clause*& c)
 
             while (AIDE->clauseSuiv != 0)
             {
-                AIDE1 = AIDE->clauseSuiv;
-                i = 0;
-                AIDE2 = c;
 
-                while (AIDE2->clauseSuiv != AIDE1)
-                {
-                    AIDE2 = AIDE2->clauseSuiv;
-                }
+                
+               
+            agin:
+                AIDE1 = AIDE->clauseSuiv;
+                AIDE2 = c;
 
                 while (AIDE1 != NULL)
                 {
+                    while (AIDE2->clauseSuiv != AIDE1)
+                    {
+                        AIDE2 = AIDE2->clauseSuiv;
+                    }
+
                     if (clauseIdentiques(AIDE->clause, AIDE1->clause))
                     {
                         cout << "true" << endl;
@@ -491,22 +494,39 @@ void minimisationTotal(Clause*& c)
                             {
                                 cout << "last" << endl;
                                 suppressionClause(AIDE2->clauseSuiv);
+                                cout << "donne" << endl;
+                                
                             }
                             else
                             {
                                 cout << "not last" << endl;
                                 suppressionMilieuClause(AIDE2->clauseSuiv);
+                                AIDE1 = 0;
+                                goto agin;
                             }
-                        
+                            AIDE1 = 0;
+                            
                     }
-                    i++;
-                    AIDE1 = AIDE1->clauseSuiv;
+
+                    
+
+                    if (AIDE1 != 0)
+                    { 
+                        AIDE1 = AIDE1->clauseSuiv;
+                    }
+
+                    cout << "affichage 1" << endl;
+                    afficheFormule(c);
                 }
-                cout << "i : " << i << endl;
-                j++;
-                AIDE = AIDE->clauseSuiv;
+
+                cout << "affichage 2" << endl;
+                afficheFormule(c);
+
+                if (AIDE->clauseSuiv != 0)
+                {
+                    AIDE = AIDE->clauseSuiv;
+                }
             }
-            cout << "j : " << j << endl;
         }
         else
         {

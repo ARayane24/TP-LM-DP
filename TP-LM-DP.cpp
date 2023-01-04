@@ -4,6 +4,7 @@
 using namespace std;
 //SIDALI
 // RAYAN
+// HI
 // les structures de données
 typedef struct Litteral {
     char leteral[2];

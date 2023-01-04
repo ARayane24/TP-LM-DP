@@ -2,7 +2,7 @@
 #include <string>
 #include <algorithm>
 using namespace std;
-
+//SIDALI
 // les structures de données
 typedef struct Litteral {
     char leteral[2];
@@ -43,7 +43,9 @@ void minimisationFonction(Clause*& c);
 void minimisationTotal(Clause*& c);
 bool clauseIdentiques(Litteral* a, Litteral* b);
 
-
+// les fonction du base
+int sizeClause(Clause* l);
+int sizeLitteral(Litteral* l);
 
 
 int main() {
@@ -553,4 +555,27 @@ bool clauseIdentiques(Litteral* a, Litteral* b)
     {
         return false;
     }
+}
+
+//size clause
+int sizeClause(Clause* c) {
+    int cntr = 0;
+    Clause* courant = c;
+    while (courant != 0) {
+        cntr++;
+        courant = courant->clauseSuiv;
+
+    }
+    return cntr;
+}
+//size Litteral
+int sizeLitteral(Litteral* l) {
+    int cntr = 0;
+    Litteral* courant = l;
+    while (courant != 0) {
+        cntr++;
+        courant = courant->leteralSuiv;
+
+    }
+    return cntr;
 }

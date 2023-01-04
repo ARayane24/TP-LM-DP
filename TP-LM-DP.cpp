@@ -3,6 +3,7 @@
 #include <algorithm>
 using namespace std;
 //SIDALI
+// RAYAN
 // les structures de données
 typedef struct Litteral {
     char leteral[2];

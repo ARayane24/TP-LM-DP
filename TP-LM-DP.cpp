@@ -313,6 +313,7 @@ void suppressionLitteral(Litteral*& l)
 }
 void suppressionClause(Clause*& c)
 {
+    c->clause = 0;
     delete c;
     c = 0;
 }
@@ -473,25 +474,30 @@ void minimisationTotal(Clause*& c)
             {
                 AIDE1 = AIDE->clauseSuiv;
                 i = 0;
+                AIDE2 = c;
+
+                while (AIDE2->clauseSuiv != AIDE1)
+                {
+                    AIDE2 = AIDE2->clauseSuiv;
+                }
+
                 while (AIDE1 != NULL)
                 {
                     if (clauseIdentiques(AIDE->clause, AIDE1->clause))
                     {
                         cout << "true" << endl;
-                        if (AIDE1 != 0)
-                        {
 
                             if (AIDE1->clauseSuiv == 0)
                             {
                                 cout << "last" << endl;
-                                suppressionClause(AIDE1->clauseSuiv);
+                                suppressionClause(AIDE2->clauseSuiv);
                             }
                             else
                             {
                                 cout << "not last" << endl;
-                                suppressionMilieuClause(AIDE1->clauseSuiv);
+                                suppressionMilieuClause(AIDE2->clauseSuiv);
                             }
-                        }
+                        
                     }
                     i++;
                     AIDE1 = AIDE1->clauseSuiv;
@@ -528,7 +534,7 @@ bool clauseIdentiques(Litteral* a, Litteral* b)
                 aide = aide->leteralSuiv;
                 break;
             }
-            //
+            
             aide = aide->leteralSuiv;
             cout << aide->leteralSuiv << endl;
         }

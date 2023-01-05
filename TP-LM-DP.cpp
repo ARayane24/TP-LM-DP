@@ -7,21 +7,21 @@ using namespace std;
 typedef struct Var {
     char leteral[3];
 };
-typedef struct Litteral {
-    Var vr;
-    Litteral* leteralSuiv;
-};
 typedef struct Clause {
-    Litteral* clause;
-    Clause* clauseSuiv;
+    Var vr;
+    Clause* leteralSuiv;
+};
+typedef struct Formule {
+    Clause* clause;
+    Formule* clauseSuiv;
 };
 
 
 
 
 // les fonction d'affichage
-void afficheClause(Litteral* L);
-void afficheFormule(Clause* C);
+void afficheClause(Clause* L);
+void afficheFormule(Formule* C);
 
 
 // les fonction de verification
@@ -30,35 +30,35 @@ int StrToInt(string messageStr);
 
 
 // les fonction de création
-void insertDebutClause(Litteral*& clause, Var leteral);
-void insertDebutFormule(Clause*& formule);
-void creationFormule(Clause*& F1, int nvar, Var* varTab);
-void creationClause(Litteral*& clause, int nvar, Var* varTab);
+void insertDebutClause(Clause*& clause, Var leteral);
+void insertDebutFormule(Formule*& formule);
+void creationFormule(Formule*& F1, int nvar, Var* varTab);
+void creationClause(Clause*& clause, int nvar, Var* varTab);
 void creationCharTabTousVar(Var*& varTab, int nvar);
 void deleteCharTabTousVar(Var*& varTab);
 
 
 // les fonction de suppression
-void suppressionLitteral(Litteral*& L);
-void suppressionClause(Clause*& C);
-void suppressionMilieuLitteral(Litteral*& L);
-void suppressionMilieuClause(Clause*& C);
+void suppressionLitteral(Clause*& L);
+void suppressionClause(Formule*& C);
+void suppressionMilieuLitteral(Clause*& L);
+void suppressionMilieuClause(Formule*& C);
 
 
 // les fonction de minimisation
-void minimisationClause(Litteral* L);
-void minimisationFormule(Clause*& C);
-void minimisationFormuleTotal(Clause*& C);
-bool clauseIdentiques(Litteral* a, Litteral* b);
+void minimisationClause(Clause* L);
+void minimisationFormule(Formule*& C);
+void minimisationFormuleTotal(Formule*& C);
+bool clauseIdentiques(Clause* a, Clause* b);
 
 
 // Les fonctions calcul de taille
-int sizeFormule(Clause* L);
-int sizeClause(Litteral* L);
+int sizeFormule(Formule* L);
+int sizeClause(Clause* L);
 
 
 int main() {
-    Clause* F1 = NULL;
+    Formule* F1 = NULL;
     int nvar;
     Var* varTab;
 
@@ -86,7 +86,7 @@ int main() {
 
 
 // les fonction d'affichage
-void afficheClause(Litteral* L)
+void afficheClause(Clause* L)
 {
     while (L != NULL)
     {
@@ -99,7 +99,7 @@ void afficheClause(Litteral* L)
     }
 }
 
-void afficheFormule(Clause* C)
+void afficheFormule(Formule* C)
 {
     if (C == NULL)
     {
@@ -200,9 +200,9 @@ int StrToInt(string messageStr)
 
 
 // les fonction de création
-void insertDebutClause(Litteral*& clause, Var leteral)
+void insertDebutClause(Clause*& clause, Var leteral)
 {
-    Litteral* AIDE = new Litteral;
+    Clause* AIDE = new Clause;
     AIDE->vr.leteral[0] = leteral.leteral[0];
     AIDE->vr.leteral[1] = leteral.leteral[1];
     AIDE->vr.leteral[2] = '\0';
@@ -210,18 +210,18 @@ void insertDebutClause(Litteral*& clause, Var leteral)
     clause = AIDE;
 }
 
-void insertDebutFormule(Clause*& formule)
+void insertDebutFormule(Formule*& formule)
 {
-    Clause* AIDE = new Clause;
+    Formule* AIDE = new Formule;
     AIDE->clause = NULL;
     AIDE->clauseSuiv = formule;
     formule = AIDE;
 }
 
-void creationFormule(Clause*& F1, int nvar, Var* varTab)
+void creationFormule(Formule*& F1, int nvar, Var* varTab)
 {
     int N;
-    Litteral* AIDE = NULL;
+    Clause* AIDE = NULL;
     N = StrToInt("donne le nombre de clause : ");
 
     cout << "\x1b[1m Remarque : \x1b[0m " << endl;
@@ -238,7 +238,7 @@ void creationFormule(Clause*& F1, int nvar, Var* varTab)
     }
 }
 
-void creationClause(Litteral*& L, int nvar, Var* varTab)
+void creationClause(Clause*& L, int nvar, Var* varTab)
 {
     string aide;
     char aide1[4]{};
@@ -351,33 +351,33 @@ void deleteCharTabTousVar(Var*& varTab)
 
 
 // les fonction de suppression
-void suppressionLitteral(Litteral*& L)
+void suppressionLitteral(Clause*& L)
 {
     // pour supprimer un litteral dans un clause (au debut / fin).
     delete L;
     L = NULL;
 }
 
-void suppressionClause(Clause*& C)
+void suppressionClause(Formule*& C)
 {
     // pour supprimer un clause dans la formule (au debut / fin).
     delete C;
     C = NULL;
 }
 
-void suppressionMilieuLitteral(Litteral*& L)
+void suppressionMilieuLitteral(Clause*& L)
 {
     // pour supprimer un litteral dans un clause (au milieu).
-    Litteral* AIDE = L->leteralSuiv;
+    Clause* AIDE = L->leteralSuiv;
     L->leteralSuiv = NULL;
     delete L;
     L = AIDE;
 }
 
-void suppressionMilieuClause(Clause*& C)
+void suppressionMilieuClause(Formule*& C)
 {
     // pour supprimer un clause dans la formule (au milieu).
-    Clause* AIDE = C->clauseSuiv;
+    Formule* AIDE = C->clauseSuiv;
     C->clauseSuiv = NULL;
     delete C;
     C = AIDE;
@@ -386,14 +386,14 @@ void suppressionMilieuClause(Clause*& C)
 
 
 // les fonction de minimisation
-void minimisationClause(Litteral* L)
+void minimisationClause(Clause* L)
 {
     //Pour supprimer les littéraux répétées.
 
     char existence[2]{};
-    Litteral* AIDE  = NULL;
-    Litteral* AIDE1 = L;
-    Litteral* AIDE2 = NULL;
+    Clause* AIDE  = NULL;
+    Clause* AIDE1 = L;
+    Clause* AIDE2 = NULL;
  
 
     if (L != NULL)
@@ -447,7 +447,7 @@ void minimisationClause(Litteral* L)
     }
 }
 
-void minimisationFormule(Clause*& C)
+void minimisationFormule(Formule*& C)
 {
     /*
            - Pour supprimer les littéraux répétées et les clause vides.
@@ -455,8 +455,8 @@ void minimisationFormule(Clause*& C)
     */
 
     bool vide = 0;   // 1 -> vide | 0 -> n'est pas vide
-    Clause* AIDE  = C;
-    Clause* AIDE2 = C;
+    Formule* AIDE  = C;
+    Formule* AIDE2 = C;
          
 
     if (C->clauseSuiv != NULL)
@@ -535,13 +535,13 @@ void minimisationFormule(Clause*& C)
 
 }
 
-void minimisationFormuleTotal(Clause*& C)
+void minimisationFormuleTotal(Formule*& C)
 {
     //Pour supprimer les littéraux et les clause répétées et les clause vides.
 
-    Clause* AIDE  = C;
-    Clause* AIDE1 = NULL;
-    Clause* AIDE2 = NULL;
+    Formule* AIDE  = C;
+    Formule* AIDE1 = NULL;
+    Formule* AIDE2 = NULL;
 
 
     if (C != NULL)
@@ -607,17 +607,17 @@ void minimisationFormuleTotal(Clause*& C)
 
 }
 
-bool clauseIdentiques(Litteral* a, Litteral* b)
+bool clauseIdentiques(Clause* a, Clause* b)
 {
     // Retourner 1 si la cluse 'a' est 'b' sont identiques.
 
     bool test = 0; // 0 ->  n'est pas identique || 1 -> est identique .
-    Litteral* aide = NULL;
+    Clause* aide = NULL;
 
     
     if (sizeClause(a) == sizeClause(b))
     {
-        // la taile de Clause 'a' est egal a la taile de Clause 'b' .
+        // la taile de Formule 'a' est egal a la taile de Formule 'b' .
 
         while (a != NULL) {
 
@@ -630,7 +630,7 @@ bool clauseIdentiques(Litteral* a, Litteral* b)
 
                 if (a->vr.leteral[0] == aide->vr.leteral[0] && a->vr.leteral[1] == aide->vr.leteral[1]) {
 
-                    test = 1; // il existe un litteral dans Clause 'a' et 'b' en même temps.
+                    test = 1; // il existe un litteral dans Formule 'a' et 'b' en même temps.
                     break;
                 }
                 aide = aide->leteralSuiv;
@@ -684,12 +684,12 @@ bool clauseIdentiques(Litteral* a, Litteral* b)
 
 
 // Les fonctions calcul de taille
-int sizeFormule(Clause* C) {
+int sizeFormule(Formule* C) {
 
     // Retourner le nombre de closes dans chaque formule.
 
     int cntr = NULL;
-    Clause* courant = C;
+    Formule* courant = C;
 
     while (courant != NULL) {
 
@@ -700,12 +700,12 @@ int sizeFormule(Clause* C) {
     return cntr;
 }
 
-int sizeClause(Litteral* L) {
+int sizeClause(Clause* L) {
 
     // Retourner le nombre de littéraux dans chaque close.
 
     int cntr = NULL;
-    Litteral* courant = L;
+    Clause* courant = L;
 
     while (courant != NULL) {
 

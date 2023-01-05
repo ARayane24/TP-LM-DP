@@ -581,8 +581,11 @@ void minimisationFormuleTotal(Clause*& C)
                 }
 
             }
-
-            AIDE = AIDE->clauseSuiv;
+            if (AIDE->clauseSuiv != 0)
+            {
+                AIDE = AIDE->clauseSuiv;
+            }
+            
         }
         
     }

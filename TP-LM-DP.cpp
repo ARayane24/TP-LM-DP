@@ -14,6 +14,8 @@ typedef struct Clause {
 };
 
 
+
+
 // les fonction d'affichage
 void afficheClause(Litteral* l);
 void afficheFormule(Clause* c);
@@ -39,13 +41,13 @@ void suppressionMilieuClause(Clause*& c);
 
 // les fonction de minimisation
 void minimisationClause(Litteral* l);
-void minimisationFonction(Clause*& c);
-void minimisationTotal(Clause*& c);
+void minimisationFormule(Clause*& c);
+void minimisationFormuleTotal(Clause*& c);
 bool clauseIdentiques(Litteral* a, Litteral* b);
 
 // les fonction du base
-int sizeClause(Clause* l);
-int sizeLitteral(Litteral* l);
+int sizeFormule(Clause* l);
+int sizeClause(Litteral* l);
 
 
 int main() {
@@ -60,11 +62,11 @@ int main() {
     cout << "La formule clausale est :\n";
     afficheFormule(F1);
 
-    minimisationFonction(F1);
+    minimisationFormule(F1);
     cout << "La formule clausale est (minimisation):\n";
     afficheFormule(F1);
 
-    minimisationTotal(F1);
+    minimisationFormuleTotal(F1);
     cout << "La formule clausale est (minimisation total):\n";
     afficheFormule(F1);
 
@@ -313,7 +315,6 @@ void suppressionLitteral(Litteral*& l)
 }
 void suppressionClause(Clause*& c)
 {
-    c->clause = 0;
     delete c;
     c = 0;
 }
@@ -390,7 +391,7 @@ void minimisationClause(Litteral* l)
         cout << "clause vide" << endl;
     }
 }
-void minimisationFonction(Clause*& c)
+void minimisationFormule(Clause*& c)
 {
     Clause* AIDE = c;
     Clause* AIDE2 = c;
@@ -453,10 +454,10 @@ void minimisationFonction(Clause*& c)
     }
 
     afficheFormule(c);
-    minimisationFonction(c);
+    minimisationFormule(c);
 }
 
-void minimisationTotal(Clause*& c)
+void minimisationFormuleTotal(Clause*& c)
 {
     Clause* AIDE = c;
     Clause* AIDE1 = 0;
@@ -465,68 +466,72 @@ void minimisationTotal(Clause*& c)
 
     if (c != NULL)
     {
-        minimisationFonction(c);
+        minimisationFormule(c);
 
         if (c->clauseSuiv != NULL)
         {
 
             while (AIDE->clauseSuiv != 0)
             {
-
-                
-               
             agin:
+
                 AIDE1 = AIDE->clauseSuiv;
-                AIDE2 = c;
+                i = 0;
+                cout << "hekk..." << endl;
+                cout << AIDE1 << endl;
 
                 while (AIDE1 != NULL)
                 {
+                    AIDE2 = c;
+
                     while (AIDE2->clauseSuiv != AIDE1)
                     {
                         AIDE2 = AIDE2->clauseSuiv;
                     }
 
+
+
                     if (clauseIdentiques(AIDE->clause, AIDE1->clause))
                     {
                         cout << "true" << endl;
 
-                            if (AIDE1->clauseSuiv == 0)
-                            {
-                                cout << "last" << endl;
-                                suppressionClause(AIDE2->clauseSuiv);
-                                cout << "donne" << endl;
-                                
-                            }
-                            else
-                            {
-                                cout << "not last" << endl;
-                                suppressionMilieuClause(AIDE2->clauseSuiv);
-                                AIDE1 = 0;
-                                goto agin;
-                            }
+                        if (AIDE1->clauseSuiv == 0)
+                        {
+                            cout << "last" << endl;
+                            suppressionClause(AIDE2->clauseSuiv);
                             AIDE1 = 0;
-                            
+                        }
+                        else
+                        {
+                            cout << "not last" << endl;
+                            suppressionMilieuClause(AIDE2->clauseSuiv);
+
+
+                            cout << "donne !!" << endl;
+                            afficheFormule(c);
+                            goto agin;
+                        }
+
                     }
 
-                    
+                    cout << "hekk" << endl;
 
+                    i++;
                     if (AIDE1 != 0)
-                    { 
+                    {
                         AIDE1 = AIDE1->clauseSuiv;
                     }
 
-                    cout << "affichage 1" << endl;
-                    afficheFormule(c);
                 }
-
-                cout << "affichage 2" << endl;
-                afficheFormule(c);
+                cout << "i : " << i << endl;
+                j++;
 
                 if (AIDE->clauseSuiv != 0)
                 {
                     AIDE = AIDE->clauseSuiv;
                 }
             }
+            cout << "j : " << j << endl;
         }
         else
         {
@@ -545,46 +550,56 @@ bool clauseIdentiques(Litteral* a, Litteral* b)
     bool test = 0; // 0 ->  n'est pas identique
     Litteral* aide = b;
 
-    while (a != NULL) {
-        aide = b;
-        while (aide != NULL)
-        {
-            if (a->leteral[0] == aide->leteral[0] && a->leteral[1] == aide->leteral[1]) {
-                test = 1;
-                aide = aide->leteralSuiv;
-                break;
+    cout << "start test" << endl;
+
+    if (sizeClause(a) == sizeClause(b))
+    {
+        while (a != NULL) {
+            aide = b;
+
+            while (aide != NULL)
+            {
+
+                if (a->leteral[0] == aide->leteral[0] && a->leteral[1] == aide->leteral[1]) {
+                    cout << aide->leteral[0] << aide->leteral[1] << endl;
+                    test = 1;
+                    break;
+                }
+                else
+                {
+                    test = 0;
+                    aide = aide->leteralSuiv;
+                }
+
             }
-            
-            aide = aide->leteralSuiv;
-            cout << aide->leteralSuiv << endl;
+
+            if (!test)
+            {
+                cout << "false" << endl;
+                return false;
+            }
+            else
+            {
+                // Si les deux littral de deux clause sont identique passez au suivant.
+
+                a = a->leteralSuiv;
+            }
         }
+        // les clause 'a' et 'b' sont identiques
 
-        cout << test << endl;
-
-        if (!test)
-        {
-            return false;
+        if (a == NULL && test) {
+            return true;
         }
-        else
-        {
-            // Si les deux littral de deux clause sont identique passez au suivant.
-
-            a = a->leteralSuiv;
-        }
-    }
-    // les clause 'a' et 'b' sont identiques
-
-    if (a == NULL && aide == NULL) {
-        return true;
     }
     else
     {
         return false;
     }
+
 }
 
 //size clause
-int sizeClause(Clause* c) {
+int sizeFormule(Clause* c) {
     int cntr = 0;
     Clause* courant = c;
     while (courant != 0) {
@@ -595,7 +610,7 @@ int sizeClause(Clause* c) {
     return cntr;
 }
 //size Litteral
-int sizeLitteral(Litteral* l) {
+int sizeClause(Litteral* l) {
     int cntr = 0;
     Litteral* courant = l;
     while (courant != 0) {

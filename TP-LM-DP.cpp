@@ -4,8 +4,11 @@
 using namespace std;
 
 // les structures de données
+typedef struct var {
+    char leteral[3];
+};
 typedef struct Litteral {
-    char leteral[2];
+    var vr;
     Litteral* leteralSuiv;
 };
 typedef struct Clause {
@@ -22,17 +25,17 @@ void afficheFormule(Clause* C);
 
 
 // les fonction de verification
-bool verifierEntree(int nvar, char* varTab, char* input);
+bool verifierEntree(int nvar, var* varTab, char* input);
 int StrToInt(string messageStr);
 
 
 // les fonction de création
-void insertDebutClause(Litteral*& clause, char* leteral);
+void insertDebutClause(Litteral*& clause, var leteral);
 void insertDebutFormule(Clause*& formule);
-void creationFormule(Clause*& F1, int nvar, char* varTab);
-void creationClause(Litteral*& clause, int nvar, char* varTab);
-void creationCharTabTousVar(char*& varTab, int nvar);
-void deleteCharTabTousVar(char*& varTab);
+void creationFormule(Clause*& F1, int nvar, var* varTab);
+void creationClause(Litteral*& clause, int nvar, var* varTab);
+void creationCharTabTousVar(var*& varTab, int nvar);
+void deleteCharTabTousVar(var*& varTab);
 
 
 // les fonction de suppression
@@ -57,8 +60,9 @@ int sizeClause(Litteral* L);
 int main() {
     Clause* F1 = NULL;
     int nvar;
-    char* varTab;
+    var* varTab;
 
+    
     nvar = StrToInt("Donne le nombre de var : ");
     creationCharTabTousVar(varTab, nvar);
 
@@ -86,7 +90,7 @@ void afficheClause(Litteral* L)
 {
     while (L != NULL)
     {
-        cout << L->leteral[0] << L->leteral[1];
+        cout << L->vr.leteral;
         L = L->leteralSuiv;
         if (L != NULL)
         {
@@ -124,7 +128,7 @@ void afficheFormule(Clause* C)
 
 
 // les fonction de verification
-bool verifierEntree(int nvar, char* varTab, char* input)
+bool verifierEntree(int nvar, var* varTab, char* input)
 {
     //pour verifier que toutes les variable entrees sont déjà déclaré. 
 
@@ -134,13 +138,13 @@ bool verifierEntree(int nvar, char* varTab, char* input)
     {
         for (int i = 0; i < nvar; i++)
         {
-            if (varTab[i] == input[1])
+            if (varTab[i].leteral[1] == input[1] || varTab[i].leteral[0] == input[1])
             {
                 existe = 1;
             }
             if (input[1] == ',')
             {
-                if (input[i] == input[0])
+                if (varTab[i].leteral[0] == input[0])
                 {
                     existe = 1;
                 }
@@ -196,11 +200,12 @@ int StrToInt(string messageStr)
 
 
 // les fonction de création
-void insertDebutClause(Litteral*& clause, char* leteral)
+void insertDebutClause(Litteral*& clause, var leteral)
 {
     Litteral* AIDE = new Litteral;
-    AIDE->leteral[0] = leteral[0];
-    AIDE->leteral[1] = leteral[1];
+    AIDE->vr.leteral[0] = leteral.leteral[0];
+    AIDE->vr.leteral[1] = leteral.leteral[1];
+    AIDE->vr.leteral[2] = '\0';
     AIDE->leteralSuiv = clause;
     clause = AIDE;
 }
@@ -213,7 +218,7 @@ void insertDebutFormule(Clause*& formule)
     formule = AIDE;
 }
 
-void creationFormule(Clause*& F1, int nvar, char* varTab)
+void creationFormule(Clause*& F1, int nvar, var* varTab)
 {
     int N;
     Litteral* AIDE = NULL;
@@ -233,10 +238,11 @@ void creationFormule(Clause*& F1, int nvar, char* varTab)
     }
 }
 
-void creationClause(Litteral*& L, int nvar, char* varTab)
+void creationClause(Litteral*& L, int nvar, var* varTab)
 {
     string aide;
-    char lit[4] = { ' ',' ',' ',' ' };
+    char aide1[4]{};
+    var lit {};
     int N;
 
     N = StrToInt("\nDonne le nombre de letteral dans cette clause : ");
@@ -246,7 +252,7 @@ void creationClause(Litteral*& L, int nvar, char* varTab)
     {
         do
         {
-            lit[0] = '\0';
+            lit.leteral[0] = '\0';
             cout << "\nDonne letteral N° " << i + 1 << " : ";
             cin >> aide;
 
@@ -259,23 +265,28 @@ void creationClause(Litteral*& L, int nvar, char* varTab)
             
 
             // Pour confirmer que la chaîne de caractères à deux caractères c'est tout .
-            lit[0] = aide[0];
-            lit[1] = aide[1];
-            lit[2] = '\0'; 
+            
 
+            aide1[0] = aide[0];
+            aide1[1] = aide[1];
+            aide1[2] = '\0';
 
-        } while (!verifierEntree(nvar, varTab, lit));
+        } while (!verifierEntree(nvar, varTab, aide1));
 
-        if (lit[1] == ',')
+        lit.leteral[0] = aide[0];
+        lit.leteral[1] = aide[1];
+        lit.leteral[2] = '\0';
+
+        if (lit.leteral[1] == ',')
         {
             // Écrire la variable sur la forme ' l'.
-            lit[1] = lit[0];
-            lit[0] = ' ';
+            lit.leteral[1] = lit.leteral[0];
+            lit.leteral[0] = ' ';
         }
         else
         {
             // Écrire la négation variable sur la forme '-l'.
-            lit[0] = '-';
+            lit.leteral[0] = '-';
         }
         insertDebutClause(L, lit);
 
@@ -287,11 +298,11 @@ void creationClause(Litteral*& L, int nvar, char* varTab)
     }
 }
 
-void creationCharTabTousVar(char*& varTab, int nvar)
+void creationCharTabTousVar(var*& varTab, int nvar)
 {
     // pour remplir un tableau dynamique type char.
 
-    varTab = new char[nvar];
+    varTab = new var[nvar];
     string input;
     bool test = 0;  // valide -> 1 | n'est pas valide -> NULL
 
@@ -326,11 +337,11 @@ void creationCharTabTousVar(char*& varTab, int nvar)
 
         } while (!test);
 
-        varTab[i] = input[0];
+        varTab[i].leteral[0] = input[0];
     }
 }
 
-void deleteCharTabTousVar(char*& varTab)
+void deleteCharTabTousVar(var*& varTab)
 {
     // pour supprimer un tableau dynamique.
     delete[] varTab;
@@ -379,7 +390,7 @@ void minimisationClause(Litteral* L)
 {
     //Pour supprimer les littéraux répétées.
 
-    char existence[2] = { ' ',' ' };
+    char existence[2]{};
     Litteral* AIDE  = NULL;
     Litteral* AIDE1 = L;
     Litteral* AIDE2 = NULL;
@@ -391,20 +402,20 @@ void minimisationClause(Litteral* L)
         {
 
 
-            existence[0] = AIDE1->leteral[0];
-            existence[1] = AIDE1->leteral[1];
+            existence[0] = AIDE1->vr.leteral[0];
+            existence[1] = AIDE1->vr.leteral[1];
             AIDE2 = AIDE1;
 
         encore:             
 
             AIDE = AIDE1->leteralSuiv;
 
-            while (AIDE->leteralSuiv != NULL && (existence[0] != AIDE->leteral[0] || existence[1] != AIDE->leteral[1]))
+            while (AIDE->leteralSuiv != NULL && (existence[0] != AIDE->vr.leteral[0] || existence[1] != AIDE->vr.leteral[1]))
             {
                 AIDE = AIDE->leteralSuiv;
             }
 
-            if (existence[0] == AIDE->leteral[0] && existence[1] == AIDE->leteral[1])
+            if (existence[0] == AIDE->vr.leteral[0] && existence[1] == AIDE->vr.leteral[1])
             {
                 while (AIDE2->leteralSuiv != AIDE)
                 {
@@ -461,7 +472,7 @@ void minimisationFormule(Clause*& C)
         if (AIDE->clause == NULL)
         {
             vide = 1;
-            cout << "éliminer un clause vide : " << endl;
+            cout << "eliminer un clause vide : " << endl;
         }
     }
     else
@@ -617,7 +628,7 @@ bool clauseIdentiques(Litteral* a, Litteral* b)
             while (aide != NULL)
             {
 
-                if (a->leteral[0] == aide->leteral[0] && a->leteral[1] == aide->leteral[1]) {
+                if (a->vr.leteral[0] == aide->vr.leteral[0] && a->vr.leteral[1] == aide->vr.leteral[1]) {
 
                     test = 1; // il existe un litteral dans Clause 'a' et 'b' en même temps.
                     break;
@@ -704,3 +715,5 @@ int sizeClause(Litteral* L) {
 
     return cntr;
 }
+
+

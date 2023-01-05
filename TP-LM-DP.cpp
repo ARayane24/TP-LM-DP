@@ -4,11 +4,11 @@
 using namespace std;
 
 // les structures de données
-typedef struct var {
+typedef struct Var {
     char leteral[3];
 };
 typedef struct Litteral {
-    var vr;
+    Var vr;
     Litteral* leteralSuiv;
 };
 typedef struct Clause {
@@ -25,17 +25,17 @@ void afficheFormule(Clause* C);
 
 
 // les fonction de verification
-bool verifierEntree(int nvar, var* varTab, char* input);
+bool verifierEntree(int nvar, Var* varTab, char* input);
 int StrToInt(string messageStr);
 
 
 // les fonction de création
-void insertDebutClause(Litteral*& clause, var leteral);
+void insertDebutClause(Litteral*& clause, Var leteral);
 void insertDebutFormule(Clause*& formule);
-void creationFormule(Clause*& F1, int nvar, var* varTab);
-void creationClause(Litteral*& clause, int nvar, var* varTab);
-void creationCharTabTousVar(var*& varTab, int nvar);
-void deleteCharTabTousVar(var*& varTab);
+void creationFormule(Clause*& F1, int nvar, Var* varTab);
+void creationClause(Litteral*& clause, int nvar, Var* varTab);
+void creationCharTabTousVar(Var*& varTab, int nvar);
+void deleteCharTabTousVar(Var*& varTab);
 
 
 // les fonction de suppression
@@ -60,10 +60,10 @@ int sizeClause(Litteral* L);
 int main() {
     Clause* F1 = NULL;
     int nvar;
-    var* varTab;
+    Var* varTab;
 
     
-    nvar = StrToInt("Donne le nombre de var : ");
+    nvar = StrToInt("Donne le nombre de Var : ");
     creationCharTabTousVar(varTab, nvar);
 
     creationFormule(F1, nvar, varTab);
@@ -128,7 +128,7 @@ void afficheFormule(Clause* C)
 
 
 // les fonction de verification
-bool verifierEntree(int nvar, var* varTab, char* input)
+bool verifierEntree(int nvar, Var* varTab, char* input)
 {
     //pour verifier que toutes les variable entrees sont déjà déclaré. 
 
@@ -200,7 +200,7 @@ int StrToInt(string messageStr)
 
 
 // les fonction de création
-void insertDebutClause(Litteral*& clause, var leteral)
+void insertDebutClause(Litteral*& clause, Var leteral)
 {
     Litteral* AIDE = new Litteral;
     AIDE->vr.leteral[0] = leteral.leteral[0];
@@ -218,7 +218,7 @@ void insertDebutFormule(Clause*& formule)
     formule = AIDE;
 }
 
-void creationFormule(Clause*& F1, int nvar, var* varTab)
+void creationFormule(Clause*& F1, int nvar, Var* varTab)
 {
     int N;
     Litteral* AIDE = NULL;
@@ -238,11 +238,11 @@ void creationFormule(Clause*& F1, int nvar, var* varTab)
     }
 }
 
-void creationClause(Litteral*& L, int nvar, var* varTab)
+void creationClause(Litteral*& L, int nvar, Var* varTab)
 {
     string aide;
     char aide1[4]{};
-    var lit {};
+    Var lit {};
     int N;
 
     N = StrToInt("\nDonne le nombre de letteral dans cette clause : ");
@@ -298,11 +298,11 @@ void creationClause(Litteral*& L, int nvar, var* varTab)
     }
 }
 
-void creationCharTabTousVar(var*& varTab, int nvar)
+void creationCharTabTousVar(Var*& varTab, int nvar)
 {
     // pour remplir un tableau dynamique type char.
 
-    varTab = new var[nvar];
+    varTab = new Var[nvar];
     string input;
     bool test = 0;  // valide -> 1 | n'est pas valide -> NULL
 
@@ -310,7 +310,7 @@ void creationCharTabTousVar(var*& varTab, int nvar)
     {
         do
         {
-            cout << "Donne la lettres de var N " << i + 1 << ": ";
+            cout << "Donne la lettres de Var N " << i + 1 << ": ";
             cin >> input;
 
             /*   Un nom de variable :
@@ -341,7 +341,7 @@ void creationCharTabTousVar(var*& varTab, int nvar)
     }
 }
 
-void deleteCharTabTousVar(var*& varTab)
+void deleteCharTabTousVar(Var*& varTab)
 {
     // pour supprimer un tableau dynamique.
     delete[] varTab;

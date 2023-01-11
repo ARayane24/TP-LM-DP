@@ -200,7 +200,13 @@ int StrToInt(string messageStr)
         cout << messageStr;
         cin >> inputStr;
 
-        intOrStr = !inputStr.empty() && all_of(inputStr.begin(), inputStr.end(), isdigit);
+        if ((inputStr[0] >= 48 && inputStr[0] <= 57) ||
+            (inputStr[0] >= 65 && inputStr[0] <= 90) ||
+            (inputStr[0] >= 97 && inputStr[0] <= 122))
+        {
+            intOrStr = !inputStr.empty() && all_of(inputStr.begin(), inputStr.end(), isdigit);
+        }
+
         if (!intOrStr)
         {
             // affiche error massage si l'entree n'est pas 'int'

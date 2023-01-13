@@ -5,11 +5,11 @@ using namespace std;
 
 // les structures de données
 typedef struct Var {
-    char leteral[3];
+    char letteral[3];
 };
 typedef struct Clause {
     Var vr;
-    Clause* leteralSuiv;
+    Clause* letteralSuiv;
 };
 typedef struct Formule {
     Clause* clause;
@@ -30,7 +30,7 @@ int StrToInt(string messageStr);
 
 
 // les fonction de création
-void insertDebutClause(Clause*& clause, Var leteral);
+void insertDebutClause(Clause*& clause, Var letteral);
 void insertDebutFormule(Formule*& formule);
 void insertTabVar(Var*& varTab, int nvar);
 void creationFormule(Formule*& F1, int nvar, Var* varTab);
@@ -60,39 +60,68 @@ int sizeClause(Clause* L);
 void creationTabClauseUnVar(Formule* c, Var* tab, int& nvar);
 
 // RG1b
-void RG1b(Formule*& C, Var* tab, int n);
-void RG1bClause(Formule*& C, Clause* l);
+void RG1b(Formule*& C, Var elemntTab);
+void RG1bEtRG2Clause(Formule*& C2, Formule* C);
 void RG1bLitiral(Clause*& l2, Clause* l);
+
+
+// RG2
+bool RG2(Formule*& C, Formule* letteral, Var l);
+
+// the main
+void DP(Formule*& F);
+
 
 int main() {
     Formule* F1 = NULL;
     int nvar, nvar1 = 2*2;
     Var* varTab , *varClause;
 
-    
-    nvar = StrToInt("Donne le nombre de Var : ");
+    do
+    {
+        nvar = StrToInt("Donne le nombre de Var : ");
+        if (nvar == 0)
+        {
+            cout << "\nErreur : " << endl;
+            cout << "Vous ne pouvez pas avoir '0' variable , veuillez donc entrer un nombre autre que '0'\n" << endl;
+        }
+    } while (nvar == 0);
+
     creationCharTabTousVar(varTab, nvar);
 
     creationFormule(F1, nvar, varTab);
     cout << "La formule clausale est :\n";
     afficheFormule(F1);
 
-    minimisationFormule(F1);
-    cout << "La formule clausale est (minimisation):\n";
-    afficheFormule(F1);
+    //from here to the rest are for test only and it will be replaced with DP call
 
     minimisationFormuleTotal(F1);
     cout << "La formule clausale est (minimisation total):\n";
     afficheFormule(F1);
 
-    cout << "RG b2  : " << endl;
+    /*
+    
+        cout << "RG b2  : " << endl;
+    // remember to remove insertTabVar and creationTabClauseUnVar it just to test RG1b
     insertTabVar(varClause , nvar1);
     cout << "RG b2  : " << endl;
     creationTabClauseUnVar(F1 , varClause, nvar1);
     cout << "RG b2  : " << endl;
-    RG1b(F1, varClause, nvar1);
+    RG1b(F1, varClause[0]);
+
+    // (A,B),(A z)
+
     cout << "RG b2  : " << endl;
     afficheFormule(F1);
+   
+    cout << "RG 222  : " << endl;
+    RG2(F1, F1, F1->clause->vr);
+
+    cout << "RG 222  : " << endl;
+    afficheFormule(F1);
+    
+    */
+    
 
 
     deleteCharTabTousVar(varTab);
@@ -106,8 +135,8 @@ void afficheClause(Clause* L)
 {
     while (L != NULL)
     {
-        cout << L->vr.leteral;
-        L = L->leteralSuiv;
+        cout << L->vr.letteral;
+        L = L->letteralSuiv;
         if (L != NULL)
         {
             cout << ", ";
@@ -154,13 +183,13 @@ bool verifierEntree(int nvar, Var* varTab, char* input)
     {
         for (int i = 0; i < nvar; i++)
         {
-            if (varTab[i].leteral[1] == input[1] || varTab[i].leteral[0] == input[1])
+            if (varTab[i].letteral[1] == input[1] || varTab[i].letteral[0] == input[1])
             {
                 existe = 1;
             }
             if (input[1] == ',')
             {
-                if (varTab[i].leteral[0] == input[0])
+                if (varTab[i].letteral[0] == input[0])
                 {
                     existe = 1;
                 }
@@ -222,13 +251,13 @@ int StrToInt(string messageStr)
 
 
 // les fonction de création
-void insertDebutClause(Clause*& clause, Var leteral)
+void insertDebutClause(Clause*& clause, Var letteral)
 {
     Clause* AIDE = new Clause;
-    AIDE->vr.leteral[0] = leteral.leteral[0];
-    AIDE->vr.leteral[1] = leteral.leteral[1];
-    AIDE->vr.leteral[2] = '\0';
-    AIDE->leteralSuiv = clause;
+    AIDE->vr.letteral[0] = letteral.letteral[0];
+    AIDE->vr.letteral[1] = letteral.letteral[1];
+    AIDE->vr.letteral[2] = '\0';
+    AIDE->letteralSuiv = clause;
     clause = AIDE;
 }
 
@@ -251,19 +280,27 @@ void creationFormule(Formule*& F1, int nvar, Var* varTab)
     int N;
     Clause* AIDE = NULL;
     N = StrToInt("donne le nombre de clause : ");
-
-    cout << "\x1b[1m Remarque : \x1b[0m " << endl;
-    cout << "\t > Si vous voulez d'entree un variable utilise \" , \" apres leur nom pour L'avoir ." << endl;
-    cout << "\t > Si vous voulez d'entree la negation d'un variable utilise \" ' \" ou \" - \" de plus avant leur nom pour L'avoir ." << endl;
-
-
-    for (int i = 0; i < N; i++)
+    if (N != 0)
     {
-        insertDebutFormule(F1);
-        creationClause(AIDE, nvar, varTab);
-        F1->clause = AIDE;
-        AIDE = NULL;
+        cout << "\x1b[1m Remarque : \x1b[0m " << endl;
+        cout << "\t > Si vous voulez d'entree un variable utilise \" , \" apres leur nom pour L'avoir ." << endl;
+        cout << "\t > Si vous voulez d'entree la negation d'un variable utilise \" ' \" ou \" - \" de plus avant leur nom pour L'avoir ." << endl;
+
+
+        for (int i = 0; i < N; i++)
+        {
+            insertDebutFormule(F1);
+            creationClause(AIDE, nvar, varTab);
+            F1->clause = AIDE;
+            AIDE = NULL;
+        }
     }
+    else
+    {
+        F1 = NULL;
+        cout << "Vous avez générer un formule vide " << endl;
+    }
+    
 }
 
 void creationClause(Clause*& L, int nvar, Var* varTab)
@@ -280,7 +317,7 @@ void creationClause(Clause*& L, int nvar, Var* varTab)
     {
         do
         {
-            lit.leteral[0] = '\0';
+            lit.letteral[0] = '\0';
             cout << "\nDonne letteral N° " << i + 1 << " : ";
             cin >> aide;
 
@@ -301,20 +338,20 @@ void creationClause(Clause*& L, int nvar, Var* varTab)
 
         } while (!verifierEntree(nvar, varTab, aide1));
 
-        lit.leteral[0] = aide[0];
-        lit.leteral[1] = aide[1];
-        lit.leteral[2] = '\0';
+        lit.letteral[0] = aide[0];
+        lit.letteral[1] = aide[1];
+        lit.letteral[2] = '\0';
 
-        if (lit.leteral[1] == ',')
+        if (lit.letteral[1] == ',')
         {
             // Écrire la variable sur la forme ' l'.
-            lit.leteral[1] = lit.leteral[0];
-            lit.leteral[0] = ' ';
+            lit.letteral[1] = lit.letteral[0];
+            lit.letteral[0] = ' ';
         }
         else
         {
             // Écrire la négation variable sur la forme '-l'.
-            lit.leteral[0] = '-';
+            lit.letteral[0] = '-';
         }
         insertDebutClause(L, lit);
 
@@ -365,7 +402,7 @@ void creationCharTabTousVar(Var*& varTab, int nvar)
 
         } while (!test);
 
-        varTab[i].leteral[0] = input[0];
+        varTab[i].letteral[0] = input[0];
     }
 }
 
@@ -390,8 +427,8 @@ void suppressionClause(Formule*& C)
 void suppressionMilieuLitteral(Clause*& L)
 {
     // pour supprimer un litteral dans un clause (au milieu).
-    Clause* AIDE = L->leteralSuiv;
-    L->leteralSuiv = NULL;
+    Clause* AIDE = L->letteralSuiv;
+    L->letteralSuiv = NULL;
     delete L;
     L = AIDE;
 }
@@ -427,44 +464,44 @@ void minimisationClause(Clause* L)
 
     if (L != NULL)
     {
-        while (AIDE1->leteralSuiv != NULL)
+        while (AIDE1->letteralSuiv != NULL)
         {
 
 
-            existence[0] = AIDE1->vr.leteral[0];
-            existence[1] = AIDE1->vr.leteral[1];
+            existence[0] = AIDE1->vr.letteral[0];
+            existence[1] = AIDE1->vr.letteral[1];
             AIDE2 = AIDE1;
 
         encore:             
 
-            AIDE = AIDE1->leteralSuiv;
+            AIDE = AIDE1->letteralSuiv;
 
-            while (AIDE->leteralSuiv != NULL && (existence[0] != AIDE->vr.leteral[0] || existence[1] != AIDE->vr.leteral[1]))
+            while (AIDE->letteralSuiv != NULL && (existence[0] != AIDE->vr.letteral[0] || existence[1] != AIDE->vr.letteral[1]))
             {
-                AIDE = AIDE->leteralSuiv;
+                AIDE = AIDE->letteralSuiv;
             }
 
-            if (existence[0] == AIDE->vr.leteral[0] && existence[1] == AIDE->vr.leteral[1])
+            if (existence[0] == AIDE->vr.letteral[0] && existence[1] == AIDE->vr.letteral[1])
             {
-                while (AIDE2->leteralSuiv != AIDE)
+                while (AIDE2->letteralSuiv != AIDE)
                 {
-                    AIDE2 = AIDE2->leteralSuiv;  // Pour l'utiliser dans les fonctions de suppression .
+                    AIDE2 = AIDE2->letteralSuiv;  // Pour l'utiliser dans les fonctions de suppression .
                 }
 
-                if (AIDE->leteralSuiv == NULL)
+                if (AIDE->letteralSuiv == NULL)
                 {
-                    suppressionLitteral(AIDE2->leteralSuiv);
+                    suppressionLitteral(AIDE2->letteralSuiv);
                 }
                 else {
-                    suppressionMilieuLitteral(AIDE2->leteralSuiv);
+                    suppressionMilieuLitteral(AIDE2->letteralSuiv);
                     goto encore;       //Pour confirmer que il y a aucun autre occurrence.
                 }
                 AIDE = AIDE1;
             }
 
-            if (AIDE1->leteralSuiv != NULL)
+            if (AIDE1->letteralSuiv != NULL)
             {
-                AIDE1 = AIDE1->leteralSuiv;
+                AIDE1 = AIDE1->letteralSuiv;
             }
             
         }
@@ -580,6 +617,7 @@ void minimisationFormuleTotal(Formule*& C)
         minimisationFormule(C); // Pour supprimer les littéraux répétées et les clause vides.
 
         // la formule doit avoir au moins deux clauses pour entree ' while '
+        AIDE = C;
 
         while (AIDE->clauseSuiv != NULL)
         {
@@ -600,7 +638,6 @@ void minimisationFormuleTotal(Formule*& C)
                 if (clauseIdentiques(AIDE->clause, AIDE1->clause))
                 {
                     // les deux clauses sont identiques
-
                     if (AIDE1->clauseSuiv == NULL)
                     {
                         suppressionClause(AIDE2->clauseSuiv);
@@ -609,7 +646,6 @@ void minimisationFormuleTotal(Formule*& C)
                     else
                     {
                         suppressionMilieuClause(AIDE2->clauseSuiv);
-
                         // Pour tester si il y a un autre occurrence de la même clause dans la formule.
                         goto encore;    
                     }
@@ -648,6 +684,7 @@ bool clauseIdentiques(Clause* a, Clause* b)
     {
         // la taile de Formule 'a' est egal a la taile de Formule 'b' .
 
+
         while (a != NULL) {
 
             
@@ -657,12 +694,12 @@ bool clauseIdentiques(Clause* a, Clause* b)
             while (aide != NULL)
             {
 
-                if (a->vr.leteral[0] == aide->vr.leteral[0] && a->vr.leteral[1] == aide->vr.leteral[1]) {
+                if (a->vr.letteral[0] == aide->vr.letteral[0] && a->vr.letteral[1] == aide->vr.letteral[1]) {
 
                     test = 1; // il existe un litteral dans Formule 'a' et 'b' en même temps.
                     break;
                 }
-                aide = aide->leteralSuiv;
+                aide = aide->letteralSuiv;
             }
 
             if (!test)
@@ -672,7 +709,7 @@ bool clauseIdentiques(Clause* a, Clause* b)
             else
             {
                 // Il y a un litteral commun .
-                a = a->leteralSuiv;
+                a = a->letteralSuiv;
             }
         }
         
@@ -739,7 +776,7 @@ int sizeClause(Clause* L) {
     while (courant != NULL) {
 
         cntr++;
-        courant = courant->leteralSuiv;
+        courant = courant->letteralSuiv;
     }
 
     return cntr;
@@ -757,14 +794,11 @@ void creationTabClauseUnVar(Formule* c, Var* tab, int& nvar) {
         Formule* aide = c;
         while (aide != NULL)
         {
-            if (aide->clause != NULL)
+            if (sizeClause(aide->clause) == 1 )
             {
-                if (aide->clause->leteralSuiv == NULL)
-                {
-                    tab[i].leteral[0] = aide->clause->vr.leteral[0];
-                    tab[i].leteral[1] = aide->clause->vr.leteral[1];
-                    i++;
-                }
+                tab[i].letteral[0] = aide->clause->vr.letteral[0];
+                tab[i].letteral[1] = aide->clause->vr.letteral[1];
+                i++;
             }
             
             aide = aide->clauseSuiv;
@@ -777,10 +811,11 @@ void creationTabClauseUnVar(Formule* c, Var* tab, int& nvar) {
 }
 
 // RG1b
-void RG1b(Formule*& C, Var* tab, int n)
+void RG1b(Formule*& C, Var elemntTab)
 {
     Formule* AIDE = C;
     Clause* aide;
+   
 
     if (AIDE != NULL)
     {
@@ -795,30 +830,35 @@ void RG1b(Formule*& C, Var* tab, int n)
                 while (aide != NULL)
                 {
                     
-                    for (int i = 0; i < n; i++)
-                    {
-                        if (tab[i].leteral[1] == aide->vr.leteral[1]) {
-                            if (tab[i].leteral[0] == aide->vr.leteral[0])
-                            {
-                                // sup clause 
-                                RG1bClause(C, aide);    
-                                afficheFormule(C);
+                    if (elemntTab.letteral[1] == aide->vr.letteral[1]) {
+                        if (elemntTab.letteral[0] == aide->vr.letteral[0])
+                        {
+                            // sup clause 
+                            RG1bEtRG2Clause(C, AIDE);
+                            afficheFormule(C);
 
-                            }
-                            else {
-                                //sup letteral
-                                RG1bLitiral(AIDE->clause, aide);
-                                afficheFormule(C);
-                            }
-                            goto agin;
                         }
+                        else {
+                            //sup letteral
+                            RG1bLitiral(AIDE->clause, aide);
+                            afficheFormule(C);
+                        }
+                        goto agin;
                     }
 
-                    aide = aide->leteralSuiv;
-                }
+                    if (aide != NULL)
+                    {
+                        aide = aide->letteralSuiv;
+                    }
 
-                donne :
-                AIDE = AIDE->clauseSuiv;
+                        
+                    
+                }
+                if (AIDE != NULL)
+                {
+                    AIDE = AIDE->clauseSuiv;
+                }
+                
             }
         }
     }  
@@ -828,100 +868,32 @@ void RG1b(Formule*& C, Var* tab, int n)
 
 }
 
-void RG1bClause(Formule*& C, Clause * l) {
-    //Pour supprimer la clausse qu'a la negation de var.
-    Formule* AIDE = C;
-    Formule* AIDE2 = C;
-    Clause* aide = C->clause;
-    bool trouve = 0;
-
-    while (AIDE != NULL)
-    {
-        aide = AIDE->clause;
-        while (aide != NULL)
-        {
-            if (l == aide)
-            {
-                trouve = 1;
-                goto end;
-            }
-
-            aide = aide->leteralSuiv;
-        }
-        
-
-        AIDE = AIDE->clauseSuiv;
-    }
-    
-end :
-
-
-    if (trouve)
-    {
-        //Il existe un clause a la negation de var .
-
-        if (AIDE != C)
-        {
-            // la clause vide n'est pas la 1er clause.
-
-            while (AIDE2->clauseSuiv != AIDE)
-            {
-                AIDE2 = AIDE2->clauseSuiv;  // Pour l'utiliser dans les fonctions de suppression .
-            }
-
-            if (AIDE->clauseSuiv == NULL)
-            {
-                suppressionClause(AIDE2->clauseSuiv);
-            }
-            else {
-                suppressionMilieuClause(AIDE2->clauseSuiv);
-            }
-
-        }
-        else
-        {
-            // la clause qui a la negation de var est la 1er clause.
-
-            suppressionMilieuClause(C);
-        }
-
-        trouve = 0;
-
-    }
-    else
-    {
-        return;
-    }
-
-
-}
-
 void RG1bLitiral(Clause *& l2, Clause* l) {
 
-    //Pour supprimer la litteral répétée dans chaque clause.
+    //Pour supprimer la litteral répétée dans Val et chaque clause.
 
     Clause* AIDE = l;
     Clause* AIDE2 = l2;
 
     if (l2 != l)
     {
-        while (AIDE2->leteralSuiv != AIDE)
+        while (AIDE2->letteralSuiv != AIDE)
         {
-            AIDE2 = AIDE2->leteralSuiv;  // Pour l'utiliser dans les fonctions de suppression .
+            AIDE2 = AIDE2->letteralSuiv;  // Pour l'utiliser dans les fonctions de suppression .
         }
 
-        if (AIDE->leteralSuiv == NULL)
+        if (AIDE->letteralSuiv == NULL)
         {
-            suppressionLitteral(AIDE2->leteralSuiv);
+            suppressionLitteral(AIDE2->letteralSuiv);
         }
         else {
-            suppressionMilieuLitteral(AIDE2->leteralSuiv);
+            suppressionMilieuLitteral(AIDE2->letteralSuiv);
         }
         l2 = AIDE2;
     }
     else
     {
-        if (l2->leteralSuiv == NULL)
+        if (l2->letteralSuiv == NULL)
         {
             suppressionLitteral(l2);
         }
@@ -931,5 +903,183 @@ void RG1bLitiral(Clause *& l2, Clause* l) {
     }
     
 
+
+}
+
+void RG1bEtRG2Clause(Formule*& C2, Formule* C) {
+    //Pour supprimer la clausse qu'a la negation de var.
+    Formule* AIDE = C;
+    Formule* AIDE2 = C2;
+
+    if (AIDE2 != C)
+    {
+        while (AIDE2->clauseSuiv != AIDE)
+        {
+            AIDE2 = AIDE2->clauseSuiv;  // Pour l'utiliser dans les fonctions de suppression .
+        }
+
+        if (AIDE->clauseSuiv == NULL)
+        {
+            suppressionClause(AIDE2->clauseSuiv);
+        }
+        else {
+            suppressionMilieuClause(AIDE2->clauseSuiv);
+        }
+
+
+    }
+    else
+    {
+        if (C2->clauseSuiv == NULL)
+        {
+            suppressionClause(C2);
+        }
+        else {
+            suppressionMilieuClause(C2);
+        }
+    }
+
+
+
+}
+
+// RG2
+bool RG2(Formule*& C, Formule* letteral, Var l)
+{
+    Formule* AIDE = C;
+    Formule* AIDE2 = C;
+    Clause* aide;
+    bool test = 0; // 0 -> il n'existe aucun negation de var
+
+    if ( C != NULL )
+    {
+        while (AIDE != NULL)
+        {
+            aide = AIDE->clause;
+            if (AIDE != letteral)
+            {
+                while (aide != NULL) {
+
+                    if (aide->vr.letteral[0] != letteral->clause->vr.letteral[0] && aide->vr.letteral[1] == letteral->clause->vr.letteral[1])
+                    {
+                        test = 1;
+                        return 0;
+                    }
+                    aide = aide->letteralSuiv;
+                }
+            }
+
+
+            AIDE = AIDE->clauseSuiv;
+        }
+
+
+        if (!test)
+        {
+        next:
+            AIDE2 = C;
+            while (AIDE2 != NULL)
+            {
+
+
+                aide = AIDE2->clause;
+
+                while (aide != NULL) {
+                    if (aide->vr.letteral[1] == l.letteral[1])
+                    {
+                        RG1bEtRG2Clause(C, AIDE2);
+                        cout << "la formule après la suppression d'une clause : " << endl;
+                        afficheFormule(C);
+                        goto next;
+                    }
+
+                    if (aide != 0)
+                    {
+                        aide = aide->letteralSuiv;
+
+                    }
+                }
+
+                if (AIDE2 != NULL)
+                {
+                    AIDE2 = AIDE2->clauseSuiv;
+                }
+            }
+            
+        }
+        return 1;
+    }
+    else {
+        cout << "Formule vide !!" << endl;
+        return 0;
+    }
+
+}
+
+
+// DP
+void DP(Formule*& F)
+{
+    Formule* AIDE = F;
+    Formule* AIDE2 = F;
+    bool succès = 0;
+    bool échec = 0;
+    bool donne = 0;
+
+    do
+    {
+        minimisationFormuleTotal(F);
+        afficheFormule(F);
+
+        if (sizeFormule(F) == 0)
+        {
+            succès = 1;
+            cout << "la formule est satisfiable."<< endl;
+        }
+        else {
+            if (sizeClause(AIDE2->clause) == 1)
+            {
+                RG1b(F, AIDE2->clause->vr);
+            }
+            else
+            {
+                
+               donne = RG2(F, AIDE2, AIDE2->clause->vr);
+               if (!donne)
+               {
+                   AIDE2->clause->vr = AIDE2->clause->letteralSuiv->vr;
+                   RG1b(F, AIDE2->clause->vr);
+               }
+
+
+
+               if (sizeClause(AIDE2->clause) == 0)
+               {
+
+
+                   if (sizeClause(AIDE2->clause) == 0)
+                   {
+                       échec = 1;
+                   }
+               }
+
+            }
+
+        }
+
+
+        if (AIDE2 != 0)
+        {
+            AIDE2 = AIDE2->clauseSuiv;
+        }
+    } while (!succès || échec);
+
+    if (échec)
+    {
+        cout << "";
+    }
+    else {
+        cout << "";
+    }
 
 }

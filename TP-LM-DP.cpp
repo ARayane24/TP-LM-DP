@@ -60,13 +60,13 @@ int sizeClause(Clause* L);
 void creationTabClauseUnVar(Formule* c, Var* tab, int& nvar);
 
 // RG1b
-void RG1b(Formule*& C, Var elemntTab);
+void RG1b(Formule*& C, Var var);
 void RG1bEtRG2Clause(Formule*& C2, Formule* C);
 void RG1bLitiral(Clause*& l2, Clause* l);
 
 
 // RG2
-bool RG2(Formule*& C, Formule* letteral, Var l);
+bool RG2(Formule*& C, Formule* clauseVar, Var var);
 
 // the main
 void DP(Formule*& F);
@@ -99,28 +99,26 @@ int main() {
     cout << "La formule clausale est (minimisation total):\n";
     afficheFormule(F1);
 
-    /*
-    
-        cout << "RG b2  : " << endl;
-    // remember to remove insertTabVar and creationTabClauseUnVar it just to test RG1b
-    insertTabVar(varClause , nvar1);
     cout << "RG b2  : " << endl;
-    creationTabClauseUnVar(F1 , varClause, nvar1);
+    // remember to remove insertTabVar and creationTabClauseUnVar it just to test RG1b
+    insertTabVar(varClause, nvar1);
+    cout << "RG b2  : " << endl;
+    creationTabClauseUnVar(F1, varClause, nvar1);
     cout << "RG b2  : " << endl;
     RG1b(F1, varClause[0]);
+
 
     // (A,B),(A z)
 
     cout << "RG b2  : " << endl;
     afficheFormule(F1);
-   
+
     cout << "RG 222  : " << endl;
     RG2(F1, F1, F1->clause->vr);
 
     cout << "RG 222  : " << endl;
     afficheFormule(F1);
-    
-    */
+
     
 
 
@@ -811,8 +809,17 @@ void creationTabClauseUnVar(Formule* c, Var* tab, int& nvar) {
 }
 
 // RG1b
-void RG1b(Formule*& C, Var elemntTab)
+void RG1b(Formule*& C, Var var)
 {
+    // cette fonction est l'application de 'RG 1b' dans l'algo de DP .
+    /*
+        suppression de toutes les clauses qui contiennent var,
+        et suppression de ¬var dans toutes les clauses où il apparaît .
+    
+    */
+
+    
+
     Formule* AIDE = C;
     Clause* aide;
    
@@ -822,28 +829,32 @@ void RG1b(Formule*& C, Var elemntTab)
         agin:
         if (AIDE->clauseSuiv != NULL)
         {
+            // la formule a au moins deux clauses
        
             AIDE = C;
             while (AIDE != NULL)
             {
+                // parcourir la liste de clause (la formule) .
+
                 aide = AIDE->clause;
                 while (aide != NULL)
                 {
-                    
-                    if (elemntTab.letteral[1] == aide->vr.letteral[1]) {
-                        if (elemntTab.letteral[0] == aide->vr.letteral[0])
+                    // parcourir la liste de var dans chaque clause .
+
+                    if (var.letteral[1] == aide->vr.letteral[1]) {
+                        if (var.letteral[0] == aide->vr.letteral[0])
                         {
-                            // sup clause 
+                            // sup clause dans le cas d'existence le meme var .
                             RG1bEtRG2Clause(C, AIDE);
                             afficheFormule(C);
 
                         }
                         else {
-                            //sup letteral
+                            //sup letteral dans le cas d'existence un négation de var .
                             RG1bLitiral(AIDE->clause, aide);
                             afficheFormule(C);
                         }
-                        goto agin;
+                        goto agin; // Pour confirmer que il n'existe aucun autre occurrence de la même variable .
                     }
 
                     if (aide != NULL)
@@ -870,13 +881,15 @@ void RG1b(Formule*& C, Var elemntTab)
 
 void RG1bLitiral(Clause *& l2, Clause* l) {
 
-    //Pour supprimer la litteral répétée dans Val et chaque clause.
+    //Pour supprimer un littiral de l'adresse qui pointer par le pointeur ' Clause* l ' .
 
     Clause* AIDE = l;
     Clause* AIDE2 = l2;
 
     if (l2 != l)
     {
+        // le littiral est dans le milu ou a la fin de la liste Clause .
+
         while (AIDE2->letteralSuiv != AIDE)
         {
             AIDE2 = AIDE2->letteralSuiv;  // Pour l'utiliser dans les fonctions de suppression .
@@ -893,6 +906,8 @@ void RG1bLitiral(Clause *& l2, Clause* l) {
     }
     else
     {
+        // le littiral est dans le debut de la liste Clause .
+
         if (l2->letteralSuiv == NULL)
         {
             suppressionLitteral(l2);
@@ -907,12 +922,16 @@ void RG1bLitiral(Clause *& l2, Clause* l) {
 }
 
 void RG1bEtRG2Clause(Formule*& C2, Formule* C) {
-    //Pour supprimer la clausse qu'a la negation de var.
+
+    //Pour supprimer la clausse de l'adresse qui pointer par le pointeur ' Formule* C ' .
+    // cette fonction est utilse dans 'RG 1b' et 'RG 2'
+
     Formule* AIDE = C;
     Formule* AIDE2 = C2;
 
     if (AIDE2 != C)
     {
+        // la clause est dans le milu ou a la fin de la liste Formule .
         while (AIDE2->clauseSuiv != AIDE)
         {
             AIDE2 = AIDE2->clauseSuiv;  // Pour l'utiliser dans les fonctions de suppression .
@@ -930,6 +949,8 @@ void RG1bEtRG2Clause(Formule*& C2, Formule* C) {
     }
     else
     {
+        // la clause est dans le debut de la liste Formule .
+
         if (C2->clauseSuiv == NULL)
         {
             suppressionClause(C2);
@@ -944,8 +965,15 @@ void RG1bEtRG2Clause(Formule*& C2, Formule* C) {
 }
 
 // RG2
-bool RG2(Formule*& C, Formule* letteral, Var l)
+bool RG2(Formule*& C, Formule* clauseVar, Var var)
 {
+    // cette fonction est l'application de 'RG 2' dans l'algo de DP .
+    /*
+        suppression de toutes
+        les clauses qui contiennent var .
+
+    */
+
     Formule* AIDE = C;
     Formule* AIDE2 = C;
     Clause* aide;
@@ -955,49 +983,52 @@ bool RG2(Formule*& C, Formule* letteral, Var l)
     {
         while (AIDE != NULL)
         {
+            // parcourir la liste de clause (la formule) .
+
             aide = AIDE->clause;
-            if (AIDE != letteral)
-            {
-                while (aide != NULL) {
+           
+            while (aide != NULL) {
+                // parcourir la liste de var dans chaque clause .
 
-                    if (aide->vr.letteral[0] != letteral->clause->vr.letteral[0] && aide->vr.letteral[1] == letteral->clause->vr.letteral[1])
-                    {
-                        test = 1;
-                        return 0;
-                    }
-                    aide = aide->letteralSuiv;
+                if (aide->vr.letteral[0] != clauseVar->clause->vr.letteral[0] && aide->vr.letteral[1] == clauseVar->clause->vr.letteral[1])
+                {
+                    // il existe un negation de var dans une des clause
+                    test = 1;
+                    return 0;
                 }
+                aide = aide->letteralSuiv;
             }
-
-
+                
             AIDE = AIDE->clauseSuiv;
         }
 
 
         if (!test)
         {
+            // il n'existe aucun negation de var dans tous la formule
+
         next:
             AIDE2 = C;
             while (AIDE2 != NULL)
             {
-
+                // parcourir la liste de clause (la formule) .
 
                 aide = AIDE2->clause;
 
                 while (aide != NULL) {
-                    if (aide->vr.letteral[1] == l.letteral[1])
+                    // parcourir la liste de var dans chaque clause .
+
+                    if (aide->vr.letteral[1] == var.letteral[1])
                     {
-                        RG1bEtRG2Clause(C, AIDE2);
-                        cout << "la formule après la suppression d'une clause : " << endl;
+                        RG1bEtRG2Clause(C, AIDE2); // suppression de clause qui contiennent Var .
+                        cout << "la formule apres la suppression d'une clause : " << endl;
                         afficheFormule(C);
-                        goto next;
+
+                        goto next; // Pour confirmer que il n'existe aucun autre occurrence de Var dans les autres clauses .
                     }
 
-                    if (aide != 0)
-                    {
-                        aide = aide->letteralSuiv;
+                    aide = aide->letteralSuiv;
 
-                    }
                 }
 
                 if (AIDE2 != NULL)

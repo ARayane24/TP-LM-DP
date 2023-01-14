@@ -1017,17 +1017,20 @@ bool RG2(Formule*& C, Formule* clauseVar, Var var)
             // parcourir la liste de clause (la formule) .
 
             aide = AIDE->clause;
+            if (AIDE != clauseVar)
+            {
+                while (aide != NULL) {
+                    // parcourir la liste de var dans chaque clause .
 
-            while (aide != NULL) {
-                // parcourir la liste de var dans chaque clause .
-
-                if (aide->vr.letteral[0] != clauseVar->clause->vr.letteral[0] && aide->vr.letteral[1] == clauseVar->clause->vr.letteral[1])
-                {
-                    // il existe un negation de var dans une des clause .
-                    test = 1;
-                    return 0;
+                    if (aide->vr.letteral[0] != clauseVar->clause->vr.letteral[0] && aide->vr.letteral[1] == clauseVar->clause->vr.letteral[1])
+                    {
+                        // il existe un negation de var dans une des clause .
+                        test = 1;
+                        return 0;
+                    }
+                    aide = aide->letteralSuiv;
                 }
-                aide = aide->letteralSuiv;
+
             }
 
             AIDE = AIDE->clauseSuiv;
@@ -1189,12 +1192,6 @@ void DP(Formule*& F)
         }
     } while (!succès || échec);
 
-    if (échec)
-    {
-        cout << "";
-    }
-    else {
-        cout << "";
-    }
+
 
 }
